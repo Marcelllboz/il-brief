@@ -1,0 +1,11 @@
+{
+  "owner": "Marcello",
+  "timezone": "Australia/Adelaide",
+  "suburbs": [
+    { "id": "athelstone",   "name": "Athelstone",   "primary": true,  "tile": { "x": 150, "y": 52,  "size": 58 } },
+    { "id": "campbelltown", "name": "Campbelltown", "primary": false, "tile": { "x": 64,  "y": 140, "size": 36 } },
+    { "id": "newton",       "name": "Newton",       "primary": false, "tile": { "x": 150, "y": 158, "size": 36 } },
+    { "id": "payneham",     "name": "Payneham",     "primary": false, "tile": { "x": 232, "y": 128, "size": 30 } },
+    { "id": "norwood",      "name": "Norwood",      "primary": false, "tile": { "x": 258, "y": 62,  "size": 30 } }
+  ]
+}

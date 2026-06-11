@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Il Brief</title>
+  <style>
+    :root { --bg:#15171B; --card:#22252B; --card-raise:#2E333C; --text:#E8E8E6;
+            --muted:#888780; --dim:#B4B2A9; --label:#85B7EB; --teal:#9FE1CB;
+            --teal-deep:#5DCAA5; --coral:#F0997B; --red:#F09595; }
+    * { box-sizing:border-box; margin:0; }
+    body { background:var(--bg); color:var(--text);
+           font:16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; padding:24px; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+    .col { display:flex; flex-direction:column; gap:10px; }
+    .card { background:var(--card); border-radius:12px; padding:14px 16px; }
+    .label { font-size:11px; letter-spacing:0.5px; color:var(--label);
+             text-transform:uppercase; margin-bottom:6px; }
+    .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .stale { background:#3A2E1E; color:#FAC775; border-radius:10px;
+             padding:10px 14px; font-size:13px; margin-top:12px; display:none; }
+    @media (max-width:760px) { .grid { grid-template-columns:1fr; } body { padding:14px; } }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.45 } }
+    .dot-ring { animation:pulse 2.4s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 id="greeting" style="font-size:24px;font-weight:500">Buongiorno, Marcello</h1>
+      <p id="datestamp" style="font-size:13px;color:var(--muted)"></p>
+    </header>
+    <div id="stale" class="stale">Showing yesterday's brief — today's update hasn't arrived yet.</div>
+    <div class="grid">
+      <div class="col" id="col-left">
+        <div class="tiles" id="tiles"></div>
+        <div class="card" id="pulse"><div class="label">Market pulse</div><div id="pulse-body"></div></div>
+        <div class="card" id="suburbs"><div class="label">My suburbs</div><div id="suburbs-body"></div></div>
+        <div class="card" id="territorio"><div class="label">Il Territorio</div>
+          <div id="map-holder"></div><div id="detail-holder"></div></div>
+      </div>
+      <div class="col" id="col-right">
+        <div class="card" id="frase" style="border-left:3px solid var(--teal-deep);border-radius:0 12px 12px 0">
+          <div class="label" style="color:var(--teal)">La frase di oggi</div><div id="frase-body"></div></div>
+        <div class="card" id="skill"><div class="label">Skill of the day</div><div id="skill-body"></div></div>
+        <div class="card" id="myday"><div class="label">My day</div><div id="myday-body"></div></div>
+      </div>
+    </div>
+  </div>
+  <script>
+  const $ = id => document.getElementById(id);
+  const fmtDay = d => d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', timeZone:'Australia/Adelaide' });
+  const todayISO = () => new Date().toLocaleDateString('en-CA', { timeZone:'Australia/Adelaide' });
+  const daysSinceEpoch = () => Math.floor(Date.parse(todayISO()) / 86400000);
+
+  async function load(name) {
+    const r = await fetch(`data/${name}.json?v=${Date.now()}`);
+    if (!r.ok) throw new Error(`${name}.json ${r.status}`);
+    return r.json();
+  }
+
+  function renderHeader(brief) {
+    const now = new Date();
+    const hr = Number(now.toLocaleString('en-AU', { hour:'numeric', hour12:false, timeZone:'Australia/Adelaide' }));
+    $('greeting').textContent = (hr < 12 ? 'Buongiorno' : hr < 18 ? 'Buon pomeriggio' : 'Buonasera') + ', Marcello';
+    const upd = new Date(brief.generatedAt).toLocaleTimeString('en-AU',
+      { hour:'numeric', minute:'2-digit', timeZone:'Australia/Adelaide' });
+    $('datestamp').textContent = `${fmtDay(now)} · brief updated ${upd}`;
+    if (brief.date !== todayISO()) $('stale').style.display = 'block';
+  }
+
+  function renderTiles(brief) {
+    $('tiles').innerHTML = `
+      <div class="card"><div class="label" style="color:var(--muted)">Cash rate</div>
+        <div style="font-size:22px;font-weight:500">${brief.metrics.cashRate}</div></div>
+      <div class="card"><div class="label" style="color:var(--muted)">Clearance</div>
+        <div style="font-size:22px;font-weight:500;color:var(--teal)">${brief.metrics.clearance}</div></div>`;
+  }
+
+  function renderPulse(brief) {
+    $('pulse-body').textContent = brief.marketPulse;
+    $('pulse-body').style.fontSize = '14px';
+  }
+
+  function renderSuburbs(config, brief) {
+    const rows = config.suburbs.map(s => {
+      const d = brief.suburbs[s.id] || { counts:{new:0,auction:0,sold:0}, lines:[] };
+      const bits = [];
+      if (d.counts.new) bits.push(`${d.counts.new} new`);
+      if (d.counts.auction) bits.push(`${d.counts.auction} auction`);
+      if (d.counts.sold) bits.push(`${d.counts.sold} sold`);
+      return `<div style="display:flex;justify-content:space-between;font-size:14px;padding:3px 0">
+        <span style="${s.primary ? 'font-weight:500' : 'color:var(--dim)'}">${s.name}</span>
+        <span style="color:${bits.length ? 'var(--teal)' : 'var(--muted)'}">${bits.join(' · ') || 'quiet'}</span></div>`;
+    });
+    $('suburbs-body').innerHTML = rows.join('');
+  }
+
+  function renderMap(config, brief, stats) {
+    const dotSpots = [[-14,-6],[16,2],[2,-16],[-2,10],[18,-10]];
+    const tiles = config.suburbs.map(s => {
+      const d = brief.suburbs[s.id] || { counts:{new:0,auction:0,sold:0}, lines:[] };
+      const z = s.tile.size, t = s.tile;
+      const colors = [...Array(d.counts.new).fill('var(--teal)'),
+                      ...Array(d.counts.auction).fill('var(--coral)'),
+                      ...Array(d.counts.sold).fill('var(--red)')].slice(0, 5);
+      const active = colors.length > 0;
+      const dots = colors.map((c, i) => {
+        const [dx, dy] = dotSpots[i].map(v => v * z / 58);
+        return `<circle class="dot-ring" cx="${dx}" cy="${dy}" r="${z/9+3}" fill="${c}" opacity="0.25"/>
+                <circle cx="${dx}" cy="${dy}" r="${z/14+2}" fill="${c}"/>`;
+      }).join('');
+      const h = z * 0.55;
+      const prim = s.primary;
+      return `<g transform="translate(${t.x},${t.y})" style="cursor:pointer" onclick="showDetail('${s.id}')">
+        ${prim ? `<ellipse cx="0" cy="${h*0.3}" rx="${z*1.25}" ry="${z*0.6}" fill="var(--teal-deep)" opacity="0.10"/>` : ''}
+        <polygon points="-${z},${h*0.12} 0,${h} 0,${h+10} -${z},${h*0.12+10}" fill="#1F2228"/>
+        <polygon points="${z},${h*0.12} 0,${h} 0,${h+10} ${z},${h*0.12+10}" fill="#262A31"/>
+        <polygon points="0,-${h} ${z},${h*0.12} 0,${h} -${z},${h*0.12}"
+          fill="${prim ? 'var(--card-raise)' : (active ? '#22252B' : '#1C1F24')}"
+          stroke="${prim ? 'var(--teal-deep)' : (active ? '#4A4E56' : '#3A3E46')}" stroke-width="${prim ? 2 : 1}"/>
+        ${dots}
+        <text x="0" y="${h+24}" text-anchor="middle" fill="${prim ? 'var(--text)' : (active ? 'var(--dim)' : '#777670')}"
+          font-size="${prim ? 11 : 9}" ${prim ? 'font-weight="500"' : ''}>${s.name}</text></g>`;
+    });
+    $('map-holder').innerHTML =
+      `<svg viewBox="0 0 300 200" style="width:100%">${tiles.join('')}</svg>
+       <div style="font-size:10px;color:var(--muted);text-align:right">tap a suburb for details</div>`;
+    window.__territorio = { config, brief, stats };
+  }
+
+  function showDetail(id) {
+    const { config, brief, stats } = window.__territorio;
+    const s = config.suburbs.find(x => x.id === id);
+    const d = brief.suburbs[id] || { lines: [] };
+    const w = (stats.suburbs || {})[id];
+    const trendGlyph = { warm:['▲','var(--teal)'], steady:['▶','var(--muted)'], cool:['▼','var(--coral)'] }[w?.trend] || ['▶','var(--muted)'];
+    $('detail-holder').innerHTML = `
+      <div style="background:var(--card-raise);border:1px solid var(--teal-deep);border-radius:10px;padding:12px;margin-top:8px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-weight:500">${s.name}</span>
+          <span style="color:var(--muted);font-size:12px;cursor:pointer" onclick="$('detail-holder').innerHTML=''">✕ close</span></div>
+        ${w ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;font-size:13px">
+          <div><div class="label" style="color:var(--muted)">Median</div>${w.median}</div>
+          <div><div class="label" style="color:var(--muted)">Days on mkt</div>${w.daysOnMarket}</div>
+          <div><div class="label" style="color:var(--muted)">Trend</div><span style="color:${trendGlyph[1]}">${trendGlyph[0]} ${w.trend}</span></div></div>
+          <div style="font-size:12px;color:var(--dim);margin-top:6px">${w.note}</div>` : ''}
+        <div style="font-size:13px;color:var(--dim);margin-top:8px">
+          ${d.lines.length ? d.lines.map(l => `● ${l}`).join('<br>') : 'Quiet day — no new activity.'}</div></div>`;
+  }
+
+  function renderRotation(italian, skills) {
+    const n = daysSinceEpoch();
+    const fr = italian.entries[n % italian.entries.length];
+    $('frase-body').innerHTML = `<div style="font-style:italic;font-size:16px">«${fr.it}»</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px">${fr.en}</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:6px">${fr.drill}</div>`;
+    const sk = skills.entries[n % skills.entries.length];
+    $('skill-body').innerHTML = `<div style="font-weight:500;font-size:14px">${sk.title}</div>
+      <div style="font-size:13px;color:var(--dim);margin-top:4px">${sk.body}</div>`;
+  }
+
+  function renderMyDay() {
+    const KEY = 'brief-v1';
+    let state;
+    try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { state = {}; }
+    if (state.date !== todayISO()) state = { date: todayISO(), tasks: (state.tasks || []).map(t => ({ ...t, done:false })) };
+    if (!state.tasks) state.tasks = [];
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} };
+    const draw = () => {
+      $('myday-body').innerHTML = state.tasks.map((t, i) =>
+        `<label style="display:flex;gap:8px;font-size:14px;padding:3px 0;${t.done ? 'color:var(--muted);text-decoration:line-through' : ''}">
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="__toggleTask(${i})"> ${t.text}</label>`).join('') +
+        `<form onsubmit="return __addTask(this)" style="margin-top:8px;display:flex;gap:6px">
+          <input name="t" placeholder="Add a task…" style="flex:1;background:var(--bg);border:1px solid #3A3E46;border-radius:8px;color:var(--text);padding:6px 10px;font-size:13px">
+          <button style="background:var(--card-raise);border:1px solid #3A3E46;border-radius:8px;color:var(--text);padding:6px 12px;cursor:pointer">+</button></form>`;
+    };
+    window.__toggleTask = i => { state.tasks[i].done = !state.tasks[i].done; save(); draw(); };
+    window.__addTask = f => { const v = f.t.value.trim(); if (v) { state.tasks.push({ text:v, done:false }); save(); draw(); } return false; };
+    save(); draw();
+  }
+
+  async function init() {
+    const [config, brief, stats, italian, skills] = await Promise.all(
+      ['config','brief','stats','italian','skills'].map(load));
+    renderHeader(brief);
+    renderTiles(brief);
+    renderPulse(brief);
+    renderSuburbs(config, brief);
+    renderMap(config, brief, stats);
+    renderRotation(italian, skills);
+    renderMyDay();
+  }
+  init().catch(e => { $('stale').style.display = 'block'; $('stale').textContent = 'Could not load brief data: ' + e.message; });
+  </script>
+</body>
+</html>

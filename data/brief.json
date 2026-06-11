@@ -1,0 +1,13 @@
+{
+  "date": "2026-06-11",
+  "generatedAt": "2026-06-11T05:32:00+09:30",
+  "metrics": { "cashRate": "3.85%", "clearance": "68%" },
+  "marketPulse": "RBA held the cash rate at 3.85% yesterday. CoreLogic notes Adelaide values up 0.4% for May, led by the north-east. Winter listing volumes are thin — motivated vendors face less competition, a useful prospecting angle this week.",
+  "suburbs": {
+    "athelstone":   { "counts": { "new": 2, "auction": 1, "sold": 0 }, "lines": ["New: 3BR family home near Thorndon Park, listed Tue", "New: 2BR townhouse on Gorge Rd", "Auction Sat 11:00am — watch the result for comps"] },
+    "campbelltown": { "counts": { "new": 1, "auction": 0, "sold": 0 }, "lines": ["New: renovated villa, character appeal, mid-$900s guide"] },
+    "newton":       { "counts": { "new": 0, "auction": 0, "sold": 1 }, "lines": ["Sold: 4BR on Montacute Rd, settled above reserve"] },
+    "payneham":     { "counts": { "new": 0, "auction": 0, "sold": 0 }, "lines": [] },
+    "norwood":      { "counts": { "new": 0, "auction": 0, "sold": 0 }, "lines": [] }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "weekOf": "2026-06-08",
+  "suburbs": {
+    "athelstone":   { "median": "$1.02M", "daysOnMarket": 31, "trend": "warm",   "note": "Tight stock; family homes moving fastest" },
+    "campbelltown": { "median": "$985k",  "daysOnMarket": 35, "trend": "steady", "note": "Villas outperforming units" },
+    "newton":       { "median": "$940k",  "daysOnMarket": 38, "trend": "steady", "note": "Downsizer demand holding prices" },
+    "payneham":     { "median": "$1.05M", "daysOnMarket": 33, "trend": "warm",   "note": "Character homes drawing eastern-suburbs buyers" },
+    "norwood":      { "median": "$1.45M", "daysOnMarket": 41, "trend": "cool",   "note": "Premium segment slower over winter" }
+  }
+}
