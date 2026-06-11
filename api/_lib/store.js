@@ -1,6 +1,11 @@
 import { Redis } from '@upstash/redis';
 
-const redis = Redis.fromEnv(); // reads UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+// The Vercel Upstash integration injects credentials under either the
+// UPSTASH_REDIS_REST_* names or the KV_REST_API_* names depending on variant.
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN,
+});
 
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
