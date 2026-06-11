@@ -36,8 +36,14 @@ async function runIntent(intent) {
       return `Noted: ${n.text}`;
     }
     case 'add_reminder': {
-      const r = await addReminder(intent.text, intent.dueAt);
-      const when = new Date(r.dueAt).toLocaleString('en-AU', { timeZone: 'Australia/Adelaide', weekday: 'short', hour: 'numeric', minute: '2-digit' });
+      const due = intent.dueAt ? new Date(intent.dueAt) : null;
+      if (!due || isNaN(due.getTime())) {
+        // No usable time — don't store a reminder that can never fire; save as a task instead.
+        const t = await addTask(intent.text);
+        return `Added as a task (couldn't read a time): ${t.text}`;
+      }
+      const r = await addReminder(intent.text, due.toISOString());
+      const when = due.toLocaleString('en-AU', { timeZone: 'Australia/Adelaide', weekday: 'short', hour: 'numeric', minute: '2-digit' });
       return `Reminder set for ${when}: ${r.text}`;
     }
     case 'complete': {
