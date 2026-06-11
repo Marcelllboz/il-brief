@@ -5,54 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Il Brief</title>
   <style>
-    :root { --bg:#15171B; --card:#22252B; --card-raise:#2E333C; --text:#E8E8E6;
-            --muted:#888780; --dim:#B4B2A9; --label:#85B7EB; --teal:#9FE1CB;
-            --teal-deep:#5DCAA5; --coral:#F0997B; --red:#F09595; }
+    :root { --bg:#14161A; --card:#1E2127; --card-2:#22252B; --raise:#2E333C; --text:#E9E9E6;
+            --muted:#8A8980; --dim:#B4B2A9; --label:#85B7EB; --teal:#9FE1CB; --teal-deep:#5DCAA5;
+            --coral:#F0997B; --red:#F09595; --amber:#FAC775; --line:rgba(255,255,255,0.05); }
     * { box-sizing:border-box; margin:0; }
     body { background:var(--bg); color:var(--text);
-           font:16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; padding:24px; }
-    .wrap { max-width:980px; margin:0 auto; }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
-    .col { display:flex; flex-direction:column; gap:10px; }
-    .card { background:var(--card); border-radius:12px; padding:14px 16px; }
-    .label { font-size:11px; letter-spacing:0.5px; color:var(--label);
-             text-transform:uppercase; margin-bottom:6px; }
-    .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .stale { background:#3A2E1E; color:#FAC775; border-radius:10px;
-             padding:10px 14px; font-size:13px; margin-top:12px; display:none; }
-    @media (max-width:760px) { .grid { grid-template-columns:1fr; } body { padding:14px; } }
-    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.45 } }
+           font:16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; padding:28px; }
+    .wrap { max-width:1040px; margin:0 auto; }
+
+    .masthead { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+    .mast-label { font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--teal-deep); margin-bottom:7px; }
+    h1#greeting { font-size:28px; font-weight:500; letter-spacing:-0.3px; }
+    .sub { font-size:13px; color:var(--muted); margin-top:3px; }
+    .countdown { flex-shrink:0; background:rgba(250,199,117,0.10); color:var(--amber);
+                 border:1px solid rgba(250,199,117,0.22); border-radius:999px;
+                 padding:7px 14px; font-size:12px; font-weight:500; white-space:nowrap; display:none; }
+    .divider { height:1px; background:var(--line); margin:18px 0 16px; }
+
+    .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+    .tile { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 15px; }
+    .tile .t-val { font-size:23px; font-weight:500; margin-top:2px; }
+
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; }
+    .col { display:flex; flex-direction:column; gap:14px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:15px 17px; }
+    .label { font-size:11px; letter-spacing:0.6px; color:var(--label); text-transform:uppercase; margin-bottom:8px; }
+
+    .hero { background:var(--card-2); border-left:3px solid var(--teal-deep); border-radius:0 12px 12px 0; }
+    .hero .label { color:var(--teal); }
+    .hero #pulse-body { font-size:15px; line-height:1.65; }
+
+    .terr { margin-top:14px; }
+    .terr-row { display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; }
+    .terr-map { flex:1 1 340px; min-width:280px; }
+    .terr-map svg { width:100%; max-width:430px; display:block; margin:0 auto; }
+    .terr-side { flex:1 1 240px; min-width:220px; }
+    .legend { display:flex; gap:16px; justify-content:center; margin-top:6px; font-size:11px; color:var(--muted); }
+    .legend span { display:inline-flex; align-items:center; gap:5px; }
+    .legend i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .terr-hint { font-size:13px; color:var(--muted); line-height:1.6;
+                 border:1px dashed var(--line); border-radius:10px; padding:14px; }
+
+    .stale { background:#3A2E1E; color:var(--amber); border-radius:10px;
+             padding:10px 14px; font-size:13px; margin-bottom:14px; display:none; }
+
+    @media (max-width:760px) {
+      body { padding:16px; }
+      .grid { grid-template-columns:1fr; }
+      .tiles { grid-template-columns:1fr 1fr; }
+      h1#greeting { font-size:24px; }
+    }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
     .dot-ring { animation:pulse 2.4s ease-in-out infinite; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <h1 id="greeting" style="font-size:24px;font-weight:500">Buongiorno, Marcello</h1>
-      <p id="datestamp" style="font-size:13px;color:var(--muted)"></p>
-    </header>
-    <div id="stale" class="stale">Showing yesterday's brief — today's update hasn't arrived yet.</div>
-    <div class="grid">
-      <div class="col" id="col-left">
-        <div class="tiles" id="tiles"></div>
-        <div class="card" id="pulse"><div class="label">Market pulse</div><div id="pulse-body"></div></div>
-        <div class="card" id="suburbs"><div class="label">My suburbs</div><div id="suburbs-body"></div></div>
-        <div class="card" id="territorio"><div class="label">Il Territorio</div>
-          <div id="map-holder"></div><div id="detail-holder"></div></div>
+    <div class="masthead">
+      <div>
+        <div class="mast-label">Il Brief · la tua giornata</div>
+        <h1 id="greeting">Buongiorno, Marcello</h1>
+        <p class="sub" id="datestamp"></p>
       </div>
-      <div class="col" id="col-right">
+      <div class="countdown" id="countdown"></div>
+    </div>
+    <div class="divider"></div>
+
+    <div id="stale" class="stale">Showing yesterday's brief — today's update hasn't arrived yet.</div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="grid">
+      <div class="col">
+        <div class="card hero" id="pulse"><div class="label">Market pulse</div><div id="pulse-body"></div></div>
+        <div class="card" id="suburbs"><div class="label">My suburbs</div><div id="suburbs-body"></div></div>
+      </div>
+      <div class="col">
         <div class="card" id="frase" style="border-left:3px solid var(--teal-deep);border-radius:0 12px 12px 0">
           <div class="label" style="color:var(--teal)">La frase di oggi</div><div id="frase-body"></div></div>
         <div class="card" id="skill"><div class="label">Skill of the day</div><div id="skill-body"></div></div>
         <div class="card" id="myday"><div class="label">My day</div><div id="myday-body"></div></div>
       </div>
     </div>
+
+    <div class="card terr" id="territorio">
+      <div class="label">Il Territorio</div>
+      <div class="terr-row">
+        <div class="terr-map">
+          <div id="map-holder"></div>
+          <div class="legend">
+            <span><i style="background:var(--teal)"></i>new</span>
+            <span><i style="background:var(--coral)"></i>auction</span>
+            <span><i style="background:var(--red)"></i>sold</span>
+          </div>
+        </div>
+        <div class="terr-side" id="detail-holder"></div>
+      </div>
+    </div>
   </div>
+
   <script>
   const $ = id => document.getElementById(id);
   const fmtDay = d => d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', timeZone:'Australia/Adelaide' });
   const todayISO = () => new Date().toLocaleDateString('en-CA', { timeZone:'Australia/Adelaide' });
   const daysSinceEpoch = () => Math.floor(Date.parse(todayISO()) / 86400000);
+
+  const TERR_HINT = '<div class="terr-hint">Tap a suburb on the map to see its median, days on market, and today’s activity.</div>';
 
   async function load(name) {
     const r = await fetch(`data/${name}.json?v=${Date.now()}`);
@@ -66,22 +124,31 @@
     $('greeting').textContent = (hr < 12 ? 'Buongiorno' : hr < 18 ? 'Buon pomeriggio' : 'Buonasera') + ', Marcello';
     const upd = new Date(brief.generatedAt).toLocaleTimeString('en-AU',
       { hour:'numeric', minute:'2-digit', timeZone:'Australia/Adelaide' });
-    $('datestamp').textContent = `${fmtDay(now)} · brief updated ${upd}`;
+    $('datestamp').textContent = `${fmtDay(now)} · Adelaide · brief updated ${upd}`;
     if (brief.date !== todayISO()) $('stale').style.display = 'block';
+
+    const days = Math.round((Date.parse('2026-07-01') - Date.parse(todayISO())) / 86400000);
+    const c = $('countdown');
+    if (days > 0) { c.textContent = `${days} ${days === 1 ? 'day' : 'days'} to 1 July`; c.style.display = 'block'; }
+    else if (days === 0) { c.textContent = 'Day 1 — in bocca al lupo!'; c.style.display = 'block'; }
   }
 
-  function renderTiles(brief) {
-    $('tiles').innerHTML = `
-      <div class="card"><div class="label" style="color:var(--muted)">Cash rate</div>
-        <div style="font-size:22px;font-weight:500">${brief.metrics.cashRate}</div></div>
-      <div class="card"><div class="label" style="color:var(--muted)">Clearance</div>
-        <div style="font-size:22px;font-weight:500;color:var(--teal)">${brief.metrics.clearance}</div></div>`;
+  function renderTiles(config, brief) {
+    const tot = config.suburbs.reduce((a, s) => {
+      const c = (brief.suburbs[s.id] || {}).counts || {};
+      a.new += c.new || 0; a.auction += c.auction || 0; return a;
+    }, { new: 0, auction: 0 });
+    const tile = (label, val, color) =>
+      `<div class="tile"><div class="label" style="color:var(--muted)">${label}</div>
+        <div class="t-val"${color ? ` style="color:${color}"` : ''}>${val}</div></div>`;
+    $('tiles').innerHTML =
+      tile('Cash rate', brief.metrics.cashRate) +
+      tile('Clearance', brief.metrics.clearance, 'var(--teal)') +
+      tile('New listings', tot.new, tot.new ? 'var(--teal)' : null) +
+      tile('Auctions', tot.auction, tot.auction ? 'var(--coral)' : null);
   }
 
-  function renderPulse(brief) {
-    $('pulse-body').textContent = brief.marketPulse;
-    $('pulse-body').style.fontSize = '14px';
-  }
+  function renderPulse(brief) { $('pulse-body').textContent = brief.marketPulse; }
 
   function renderSuburbs(config, brief) {
     const rows = config.suburbs.map(s => {
@@ -90,8 +157,8 @@
       if (d.counts.new) bits.push(`${d.counts.new} new`);
       if (d.counts.auction) bits.push(`${d.counts.auction} auction`);
       if (d.counts.sold) bits.push(`${d.counts.sold} sold`);
-      return `<div style="display:flex;justify-content:space-between;font-size:14px;padding:3px 0">
-        <span style="${s.primary ? 'font-weight:500' : 'color:var(--dim)'}">${s.name}</span>
+      return `<div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid var(--line)">
+        <span style="${s.primary ? 'font-weight:500' : 'color:var(--dim)'}">${s.primary ? '★ ' : ''}${s.name}</span>
         <span style="color:${bits.length ? 'var(--teal)' : 'var(--muted)'}">${bits.join(' · ') || 'quiet'}</span></div>`;
     });
     $('suburbs-body').innerHTML = rows.join('');
@@ -115,18 +182,17 @@
       const prim = s.primary;
       return `<g transform="translate(${t.x},${t.y})" style="cursor:pointer" onclick="showDetail('${s.id}')">
         ${prim ? `<ellipse cx="0" cy="${h*0.3}" rx="${z*1.25}" ry="${z*0.6}" fill="var(--teal-deep)" opacity="0.10"/>` : ''}
-        <polygon points="-${z},${h*0.12} 0,${h} 0,${h+10} -${z},${h*0.12+10}" fill="#1F2228"/>
-        <polygon points="${z},${h*0.12} 0,${h} 0,${h+10} ${z},${h*0.12+10}" fill="#262A31"/>
+        <polygon points="-${z},${h*0.12} 0,${h} 0,${h+10} -${z},${h*0.12+10}" fill="#1A1D22"/>
+        <polygon points="${z},${h*0.12} 0,${h} 0,${h+10} ${z},${h*0.12+10}" fill="#23262C"/>
         <polygon points="0,-${h} ${z},${h*0.12} 0,${h} -${z},${h*0.12}"
-          fill="${prim ? 'var(--card-raise)' : (active ? '#22252B' : '#1C1F24')}"
-          stroke="${prim ? 'var(--teal-deep)' : (active ? '#4A4E56' : '#3A3E46')}" stroke-width="${prim ? 2 : 1}"/>
+          fill="${prim ? 'var(--raise)' : (active ? '#22252B' : '#1A1D22')}"
+          stroke="${prim ? 'var(--teal-deep)' : (active ? '#4A4E56' : '#34383F')}" stroke-width="${prim ? 2 : 1}"/>
         ${dots}
-        <text x="0" y="${h+24}" text-anchor="middle" fill="${prim ? 'var(--text)' : (active ? 'var(--dim)' : '#777670')}"
+        <text x="0" y="${h+24}" text-anchor="middle" fill="${prim ? 'var(--text)' : (active ? 'var(--dim)' : '#76756F')}"
           font-size="${prim ? 11 : 9}" ${prim ? 'font-weight="500"' : ''}>${s.name}</text></g>`;
     });
-    $('map-holder').innerHTML =
-      `<svg viewBox="0 0 300 200" style="width:100%">${tiles.join('')}</svg>
-       <div style="font-size:10px;color:var(--muted);text-align:right">tap a suburb for details</div>`;
+    $('map-holder').innerHTML = `<svg viewBox="0 0 300 200">${tiles.join('')}</svg>`;
+    $('detail-holder').innerHTML = TERR_HINT;
     window.__territorio = { config, brief, stats };
   }
 
@@ -135,18 +201,18 @@
     const s = config.suburbs.find(x => x.id === id);
     const d = brief.suburbs[id] || { lines: [] };
     const w = (stats.suburbs || {})[id];
-    const trendGlyph = { warm:['▲','var(--teal)'], steady:['▶','var(--muted)'], cool:['▼','var(--coral)'] }[w?.trend] || ['▶','var(--muted)'];
+    const tg = { warm:['▲','var(--teal)'], steady:['▶','var(--muted)'], cool:['▼','var(--coral)'] }[w?.trend] || ['▶','var(--muted)'];
     $('detail-holder').innerHTML = `
-      <div style="background:var(--card-raise);border:1px solid var(--teal-deep);border-radius:10px;padding:12px;margin-top:8px">
-        <div style="display:flex;justify-content:space-between">
-          <span style="font-weight:500">${s.name}</span>
-          <span style="color:var(--muted);font-size:12px;cursor:pointer" onclick="$('detail-holder').innerHTML=''">✕ close</span></div>
-        ${w ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;font-size:13px">
-          <div><div class="label" style="color:var(--muted)">Median</div>${w.median}</div>
-          <div><div class="label" style="color:var(--muted)">Days on mkt</div>${w.daysOnMarket}</div>
-          <div><div class="label" style="color:var(--muted)">Trend</div><span style="color:${trendGlyph[1]}">${trendGlyph[0]} ${w.trend}</span></div></div>
-          <div style="font-size:12px;color:var(--dim);margin-top:6px">${w.note}</div>` : ''}
-        <div style="font-size:13px;color:var(--dim);margin-top:8px">
+      <div style="background:var(--raise);border:1px solid var(--teal-deep);border-radius:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:500;font-size:15px">${s.primary ? '★ ' : ''}${s.name}</span>
+          <span style="color:var(--muted);font-size:12px;cursor:pointer" onclick="$('detail-holder').innerHTML=TERR_HINT">✕</span></div>
+        ${w ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;font-size:14px">
+          <div><div class="label" style="color:var(--muted);margin-bottom:2px">Median</div>${w.median}</div>
+          <div><div class="label" style="color:var(--muted);margin-bottom:2px">Days</div>${w.daysOnMarket}</div>
+          <div><div class="label" style="color:var(--muted);margin-bottom:2px">Trend</div><span style="color:${tg[1]}">${tg[0]} ${w.trend}</span></div></div>
+          <div style="font-size:12px;color:var(--dim);margin-top:8px">${w.note}</div>` : ''}
+        <div style="font-size:13px;color:var(--dim);margin-top:10px;border-top:1px solid var(--line);padding-top:10px">
           ${d.lines.length ? d.lines.map(l => `● ${l}`).join('<br>') : 'Quiet day — no new activity.'}</div></div>`;
   }
 
@@ -154,11 +220,11 @@
     const n = daysSinceEpoch();
     const fr = italian.entries[n % italian.entries.length];
     $('frase-body').innerHTML = `<div style="font-style:italic;font-size:16px">«${fr.it}»</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:2px">${fr.en}</div>
-      <div style="font-size:12px;color:var(--dim);margin-top:6px">${fr.drill}</div>`;
+      <div style="font-size:13px;color:var(--muted);margin-top:3px">${fr.en}</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px">${fr.drill}</div>`;
     const sk = skills.entries[n % skills.entries.length];
     $('skill-body').innerHTML = `<div style="font-weight:500;font-size:14px">${sk.title}</div>
-      <div style="font-size:13px;color:var(--dim);margin-top:4px">${sk.body}</div>`;
+      <div style="font-size:13px;color:var(--dim);margin-top:5px">${sk.body}</div>`;
   }
 
   function renderMyDay() {
@@ -173,8 +239,8 @@
         `<label style="display:flex;gap:8px;font-size:14px;padding:3px 0;${t.done ? 'color:var(--muted);text-decoration:line-through' : ''}">
           <input type="checkbox" ${t.done ? 'checked' : ''} onchange="__toggleTask(${i})"> ${t.text}</label>`).join('') +
         `<form onsubmit="return __addTask(this)" style="margin-top:8px;display:flex;gap:6px">
-          <input name="t" placeholder="Add a task…" style="flex:1;background:var(--bg);border:1px solid #3A3E46;border-radius:8px;color:var(--text);padding:6px 10px;font-size:13px">
-          <button style="background:var(--card-raise);border:1px solid #3A3E46;border-radius:8px;color:var(--text);padding:6px 12px;cursor:pointer">+</button></form>`;
+          <input name="t" placeholder="Add a task…" style="flex:1;background:var(--bg);border:1px solid #34383F;border-radius:8px;color:var(--text);padding:6px 10px;font-size:13px">
+          <button style="background:var(--raise);border:1px solid #34383F;border-radius:8px;color:var(--text);padding:6px 12px;cursor:pointer">+</button></form>`;
     };
     window.__toggleTask = i => { state.tasks[i].done = !state.tasks[i].done; save(); draw(); };
     window.__addTask = f => { const v = f.t.value.trim(); if (v) { state.tasks.push({ text:v, done:false }); save(); draw(); } return false; };
@@ -185,7 +251,7 @@
     const [config, brief, stats, italian, skills] = await Promise.all(
       ['config','brief','stats','italian','skills'].map(load));
     renderHeader(brief);
-    renderTiles(brief);
+    renderTiles(config, brief);
     renderPulse(brief);
     renderSuburbs(config, brief);
     renderMap(config, brief, stats);
