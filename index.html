@@ -6,12 +6,12 @@
   <title>Il Brief</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root { --bg:#14161A; --card:#1E2127; --card-2:#22252B; --raise:#2E333C; --text:#E9E9E6;
             --muted:#8A8980; --dim:#B4B2A9; --label:#85B7EB; --teal:#9FE1CB; --teal-deep:#5DCAA5;
             --coral:#F0997B; --red:#F09595; --amber:#FAC775; --line:rgba(255,255,255,0.05);
-            --serif:'Fraunces', Georgia, 'Times New Roman', serif; }
+            --display:'Archivo', -apple-system, 'Segoe UI', sans-serif; }
     * { box-sizing:border-box; margin:0; }
     body { background:var(--bg); color:var(--text);
            font:16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; padding:28px; }
@@ -19,11 +19,11 @@
 
     .masthead { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; }
     .mast-label { font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--teal-deep); margin-bottom:8px; }
-    h1#greeting { font-family:var(--serif); font-size:36px; font-weight:500; letter-spacing:-0.4px; line-height:1.05; }
-    .sub { font-size:13px; color:var(--muted); margin-top:6px; }
+    h1#greeting { font-family:var(--display); font-size:35px; font-weight:800; letter-spacing:-1.1px; line-height:1.02; }
+    .sub { font-size:13px; color:var(--muted); margin-top:7px; }
     .mast-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; }
-    .clock { font-family:var(--serif); font-size:46px; font-weight:500; line-height:0.95;
-             letter-spacing:0.5px; color:var(--text); font-variant-numeric:tabular-nums; }
+    .clock { font-family:var(--display); font-size:46px; font-weight:800; line-height:0.92;
+             letter-spacing:-1.5px; color:var(--text); font-variant-numeric:tabular-nums; }
     .clock .colon { animation:blink 1.6s steps(1,end) infinite; }
     .clock-loc { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-top:5px; }
     .countdown { background:rgba(250,199,117,0.10); color:var(--amber);
@@ -187,9 +187,9 @@
       if (d.counts.new) bits.push(`${d.counts.new} new`);
       if (d.counts.auction) bits.push(`${d.counts.auction} auction`);
       if (d.counts.sold) bits.push(`${d.counts.sold} sold`);
-      return `<div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid var(--line)">
-        <span style="${s.primary ? 'font-weight:500' : 'color:var(--dim)'}">${s.primary ? '★ ' : ''}${s.name}</span>
-        <span style="color:${bits.length ? 'var(--teal)' : 'var(--muted)'}">${bits.join(' · ') || 'quiet'}</span></div>`;
+      return `<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid var(--line)">
+        <span style="font-weight:${s.primary ? 700 : 600};color:var(--text)">${s.primary ? '★ ' : ''}${s.name}</span>
+        <span style="font-weight:600;color:${bits.length ? 'var(--teal)' : 'var(--muted)'}">${bits.join(' · ') || 'quiet'}</span></div>`;
     });
     $('suburbs-body').innerHTML = rows.join('');
   }
