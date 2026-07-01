@@ -365,20 +365,35 @@
     'Before/after of a room that styling transformed.',
     'This weekend’s opens in your suburbs — one saveable post.',
     'A 5-star client moment (with their permission).',
+    'Reel: 3 things buyers always miss on a first inspection.',
+    '“Should I sell before I buy?” — the honest 60-second answer.',
+    'Poll your audience: modern build or full-of-character character home?',
+    'A day-in-the-life: what your agent actually does between listing and sold.',
+    'Explain auction vs private treaty in plain English for SA sellers.',
+    'One under-rated street in your farm area — and why buyers love it.',
+    'Quick reno ROI: the 3 cheapest changes that lift a sale price.',
+    'Rapid-fire: 5 questions to ask before you pick an agent.',
+    'Local guide: best coffee, parks and schools in one of your suburbs.',
+    'Interest-rate check-in: what today’s move means for buyers this month.',
   ];
   function renderContent() {
-    const idea = CONTENT_IDEAS[daysSinceEpoch() % CONTENT_IDEAS.length];
     const KEY = 'content-posted';
     let posted = false;
     try { posted = localStorage.getItem(KEY) === todayISO(); } catch {}
+    let i = daysSinceEpoch() % CONTENT_IDEAS.length;
+    const arrow = 'cursor:pointer;color:var(--gold);font-size:16px;line-height:1;padding:0 4px;user-select:none';
     const draw = () => {
-      $('content-flag').textContent = posted ? '✓ done' : '';
-      $('content-flag').style.color = posted ? 'var(--gold)' : 'var(--muted)';
+      $('content-flag').innerHTML =
+        `<span onclick="__contentNav(-1)" style="${arrow}">‹</span>` +
+        `<span style="color:var(--muted);font-size:11px">${i + 1}/${CONTENT_IDEAS.length}</span>` +
+        `<span onclick="__contentNav(1)" style="${arrow}">›</span>` +
+        (posted ? `<span style="color:var(--gold);margin-left:8px">✓</span>` : '');
       $('content-body').innerHTML = `
-        <div style="font-size:14px;line-height:1.5;color:var(--text)">${idea}</div>
+        <div style="font-size:14px;line-height:1.5;color:var(--text)">${CONTENT_IDEAS[i]}</div>
         <label style="display:inline-flex;align-items:center;gap:8px;margin-top:11px;font-size:13px;color:${posted ? 'var(--gold)' : 'var(--muted)'};cursor:pointer">
           <input type="checkbox" ${posted ? 'checked' : ''} onchange="__togglePosted()"> ${posted ? 'Posted today' : 'Mark as posted'}</label>`;
     };
+    window.__contentNav = (d) => { i = (i + d + CONTENT_IDEAS.length) % CONTENT_IDEAS.length; draw(); };
     window.__togglePosted = () => {
       posted = !posted;
       try { posted ? localStorage.setItem(KEY, todayISO()) : localStorage.removeItem(KEY); } catch {}
