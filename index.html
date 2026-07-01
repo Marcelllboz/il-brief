@@ -266,26 +266,24 @@
       <div style="font-size:13px;color:var(--dim);margin-top:5px">${sk.body}</div>`;
   }
 
-  function renderMyDay() {
-    const KEY = 'brief-v1';
-    let state;
-    try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { state = {}; }
-    if (state.date !== todayISO()) state = { date: todayISO(), tasks: (state.tasks || []).map(t => ({ ...t, done:false })) };
-    if (!state.tasks) state.tasks = [];
-    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} };
-    const draw = () => {
-      const done = state.tasks.filter(t => t.done).length;
-      $('myday-count').textContent = state.tasks.length ? `${done}/${state.tasks.length} done` : '';
-      $('myday-body').innerHTML = state.tasks.map((t, i) =>
-        `<label style="display:flex;gap:8px;font-size:14px;padding:3px 0;${t.done ? 'color:var(--muted);text-decoration:line-through' : ''}">
-          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="__toggleTask(${i})"> ${t.text}</label>`).join('') +
-        `<form onsubmit="return __addTask(this)" style="margin-top:8px;display:flex;gap:6px">
-          <input name="t" placeholder="Add a task…" style="flex:1;background:var(--bg);border:1px solid #34383F;border-radius:8px;color:var(--text);padding:6px 10px;font-size:13px">
-          <button style="background:var(--raise);border:1px solid #34383F;border-radius:8px;color:var(--text);padding:6px 12px;cursor:pointer">+</button></form>`;
-    };
-    window.__toggleTask = i => { state.tasks[i].done = !state.tasks[i].done; save(); draw(); };
-    window.__addTask = f => { const v = f.t.value.trim(); if (v) { state.tasks.push({ text:v, done:false }); save(); draw(); } return false; };
-    save(); draw();
+  async function renderMyDay() {
+    let tasks = [];
+    try {
+      const r = await fetch('/api/tasks?v=' + Date.now());
+      if (r.ok) tasks = (await r.json()).tasks || [];
+    } catch (e) { /* dashboard must never break — fall through to hint */ }
+    const open = tasks.filter((t) => !t.done);
+    const done = tasks.filter((t) => t.done);
+    $('myday-count').textContent = tasks.length ? `${done.length}/${tasks.length} done` : '';
+    if (!tasks.length) {
+      $('myday-body').innerHTML = `<div style="font-size:13px;color:var(--muted);line-height:1.6">
+        Nothing yet. Text your bot — "add call the Espositos" — and it shows here.</div>`;
+      return;
+    }
+    const row = (t) => `<div style="font-size:14px;padding:3px 0;${t.done ? 'color:var(--muted);text-decoration:line-through' : ''}">
+      ${t.done ? '✓ ' : '• '}${t.text}</div>`;
+    $('myday-body').innerHTML = open.map(row).join('') + done.map(row).join('') +
+      `<div style="font-size:12px;color:var(--muted);margin-top:8px">Text the bot to add or complete tasks.</div>`;
   }
 
   // Daily flashcard deck: 5 suburb-numbers cards. Reveal → Next → …gold tick when all 5 are done.
@@ -413,7 +411,7 @@
     renderRotation(italian, skills);
     renderKnowNumbers(config, stats);
     renderContent();
-    renderMyDay();
+    await renderMyDay();
   }
   init().catch(e => { $('stale').style.display = 'block'; $('stale').textContent = 'Could not load brief data: ' + e.message; });
   </script>
