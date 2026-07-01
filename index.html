@@ -6,39 +6,45 @@
   <title>Il Brief</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#14161A; --card:#1E2127; --card-2:#22252B; --raise:#2E333C; --text:#E9E9E6;
-            --muted:#8A8980; --dim:#B4B2A9; --label:#85B7EB; --teal:#9FE1CB; --teal-deep:#5DCAA5;
-            --coral:#F0997B; --red:#F09595; --amber:#FAC775; --line:rgba(255,255,255,0.05);
-            --display:'Archivo', -apple-system, 'Segoe UI', sans-serif; }
+    /* Quiet-luxury palette: warm charcoal + a single champagne-gold accent.
+       Type system: Cinzel (cinematic engraved serif) = brand voice (mark + name).
+       Jost (sleek geometric sans) = the workhorse for clock, figures, and all UI. */
+    :root { --bg:#0E0F11; --card:#16171A; --card-2:#1B1C20; --raise:#26272C; --text:#ECE7DD;
+            --muted:#8B867B; --dim:#B7B1A5; --label:#8B867B; --teal:#CBB079; --teal-deep:#B0935A;
+            --coral:#C08A5A; --red:#9E8B79; --amber:#CBB079; --line:rgba(220,210,190,0.07);
+            --gold:#CBB079; --gold-soft:rgba(203,176,121,0.10);
+            --title:'Cinzel', Georgia, 'Times New Roman', serif;
+            --display:'Jost', -apple-system, 'Segoe UI', sans-serif;
+            --sans:'Jost', -apple-system, 'Segoe UI', sans-serif; }
     * { box-sizing:border-box; margin:0; }
     body { background:var(--bg); color:var(--text);
            font:16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; padding:28px; }
     .wrap { max-width:1040px; margin:0 auto; }
 
     .masthead { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; }
-    .mast-label { font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--teal-deep); margin-bottom:8px; }
-    h1#greeting { font-family:var(--display); font-size:35px; font-weight:800; letter-spacing:-1.1px; line-height:1.02; }
-    .sub { font-size:13px; color:var(--muted); margin-top:7px; }
+    .mast-label { font-family:var(--title); font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+    h1#greeting { font-family:var(--title); font-size:40px; font-weight:500; letter-spacing:0.5px; line-height:1.06; }
+    .sub { font-size:12px; letter-spacing:0.3px; color:var(--muted); margin-top:11px; }
     .mast-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; }
-    .clock { font-family:var(--display); font-size:46px; font-weight:800; line-height:0.92;
-             letter-spacing:-1.5px; color:var(--text); font-variant-numeric:tabular-nums; }
-    .clock .colon { animation:blink 1.6s steps(1,end) infinite; }
-    .clock-loc { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-top:5px; }
-    .countdown { background:rgba(250,199,117,0.10); color:var(--amber);
-                 border:1px solid rgba(250,199,117,0.22); border-radius:999px;
-                 padding:6px 13px; font-size:12px; font-weight:500; white-space:nowrap; margin-top:11px; display:none; }
-    .divider { height:1px; background:var(--line); margin:20px 0 16px; }
+    .clock { font-family:var(--display); font-size:54px; font-weight:300; line-height:0.85;
+             letter-spacing:1px; color:var(--text); font-variant-numeric:tabular-nums; }
+    .clock .colon { color:var(--gold); }
+    .clock-loc { font-family:var(--sans); font-size:9px; letter-spacing:3.5px; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+    .countdown { background:var(--gold-soft); color:var(--gold);
+                 border:1px solid rgba(203,176,121,0.24); border-radius:999px;
+                 padding:6px 14px; font-size:11px; font-weight:500; letter-spacing:0.4px; white-space:nowrap; margin-top:13px; display:none; }
+    .divider { height:1px; background:linear-gradient(90deg,rgba(203,176,121,0.28),var(--line) 40%,var(--line)); margin:22px 0 18px; }
 
-    .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
-    .tile { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 15px; }
-    .tile .t-val { font-size:23px; font-weight:500; margin-top:2px; }
+    .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+    .tile { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+    .tile .t-val { font-family:var(--display); font-size:32px; font-weight:500; line-height:1; margin-top:4px; }
 
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; }
-    .col { display:flex; flex-direction:column; gap:14px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:15px 17px; }
-    .label { font-size:11px; letter-spacing:0.6px; color:var(--label); text-transform:uppercase; margin-bottom:8px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+    .col { display:flex; flex-direction:column; gap:16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+    .label { font-family:var(--sans); font-size:10px; letter-spacing:1.8px; color:var(--label); text-transform:uppercase; margin-bottom:10px; }
 
     .hero { background:var(--card-2); border-left:3px solid var(--teal-deep); border-radius:0 12px 12px 0; }
     .hero .label { color:var(--teal); }
@@ -63,9 +69,9 @@
       .grid { grid-template-columns:1fr; }
       .tiles { grid-template-columns:1fr 1fr; }
       .masthead { align-items:flex-start; gap:14px; }
-      h1#greeting { font-size:25px; }
-      .clock { font-size:32px; }
-      .clock-loc { letter-spacing:2px; }
+      h1#greeting { font-size:27px; letter-spacing:0.3px; }
+      .clock { font-size:38px; }
+      .clock-loc { letter-spacing:2.5px; }
     }
     @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
     .dot-ring { animation:pulse 2.4s ease-in-out infinite; }
@@ -249,9 +255,9 @@
   function renderRotation(italian, skills) {
     const n = daysSinceEpoch();
     const fr = italian.entries[n % italian.entries.length];
-    $('frase-body').innerHTML = `<div style="font-style:italic;font-size:16px">«${fr.it}»</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:3px">${fr.en}</div>
-      <div style="font-size:12px;color:var(--dim);margin-top:8px">${fr.drill}</div>`;
+    $('frase-body').innerHTML = `<div style="font-family:var(--display);font-weight:400;font-size:20px;line-height:1.35;color:var(--text)">«${fr.it}»</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">${fr.en}</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:9px">${fr.drill}</div>`;
     const sk = skills.entries[n % skills.entries.length];
     $('skill-body').innerHTML = `<div style="font-weight:500;font-size:14px">${sk.title}</div>
       <div style="font-size:13px;color:var(--dim);margin-top:5px">${sk.body}</div>`;
