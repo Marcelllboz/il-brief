@@ -19,6 +19,7 @@
             --display:'Jost', -apple-system, 'Segoe UI', sans-serif;
             --sans:'Jost', -apple-system, 'Segoe UI', sans-serif; }
     * { box-sizing:border-box; margin:0; }
+    input[type=checkbox] { accent-color:var(--gold); cursor:pointer; }
     body { background:var(--bg); color:var(--text);
            font:16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; padding:28px; }
     .wrap { max-width:1040px; margin:0 auto; }
@@ -105,6 +106,7 @@
       <div class="col">
         <div class="card hero" id="pulse"><div class="label">Market pulse</div><div id="pulse-body"></div></div>
         <div class="card" id="suburbs"><div class="label">My suburbs</div><div id="suburbs-body"></div></div>
+        <div class="card" id="knowNumbers"><div class="label" style="display:flex;justify-content:space-between"><span>Know your numbers</span><span id="know-count" style="color:var(--muted);letter-spacing:0"></span></div><div id="know-body"></div></div>
       </div>
       <div class="col">
         <div class="card" id="myday" style="border-left:3px solid var(--amber);border-radius:0 12px 12px 0">
@@ -114,6 +116,7 @@
         <div class="card" id="frase" style="border-left:3px solid var(--teal-deep);border-radius:0 12px 12px 0">
           <div class="label" style="color:var(--teal)">La frase di oggi</div><div id="frase-body"></div></div>
         <div class="card" id="skill"><div class="label">Skill of the day</div><div id="skill-body"></div></div>
+        <div class="card" id="content"><div class="label" style="display:flex;justify-content:space-between"><span>Content · post today?</span><span id="content-flag" style="color:var(--muted);letter-spacing:0"></span></div><div id="content-body"></div></div>
       </div>
     </div>
 
@@ -285,6 +288,105 @@
     save(); draw();
   }
 
+  // Daily flashcard deck: 5 suburb-numbers cards. Reveal → Next → …gold tick when all 5 are done.
+  function renderKnowNumbers(config, stats) {
+    const all = config.suburbs;
+    const deckLen = Math.min(5, all.length);
+    const start = daysSinceEpoch() % all.length;
+    const deck = Array.from({ length: deckLen }, (_, i) => all[(start + i) % all.length]);
+    const KEY = 'know-v1';
+    let done = 0;
+    try { const st = JSON.parse(localStorage.getItem(KEY) || '{}'); if (st.date === todayISO()) done = Math.min(st.done || 0, deckLen); } catch {}
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ date: todayISO(), done })); } catch {} };
+    const btnStyle = 'margin-top:12px;background:var(--raise);border:1px solid var(--line);border-radius:8px;color:var(--gold);padding:7px 14px;cursor:pointer;font-family:var(--sans);font-size:11px;letter-spacing:1.5px;text-transform:uppercase';
+
+    const drawDone = () => {
+      $('know-count').textContent = `${deckLen} / ${deckLen}`;
+      $('know-count').style.color = 'var(--gold)';
+      $('know-body').innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+          <span style="color:var(--gold);font-size:24px;line-height:1">✓</span>
+          <div>
+            <div style="font-family:var(--title);font-size:20px;font-weight:500;letter-spacing:0.5px">Completed</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">${deckLen} suburbs refreshed today. Back tomorrow.</div>
+          </div>
+        </div>`;
+    };
+
+    const drawCard = () => {
+      const s = deck[done];
+      const w = (stats.suburbs || {})[s.id];
+      $('know-count').textContent = `${done + 1} / ${deckLen}`;
+      $('know-count').style.color = 'var(--muted)';
+      const nextLabel = (done + 1 >= deckLen) ? 'Finish ✓' : 'Next card →';
+      if (!w) {
+        $('know-body').innerHTML = `<div style="font-family:var(--title);font-size:22px;font-weight:500">${s.name}</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:6px">No numbers for this one yet.</div>
+          <button onclick="__knowNext()" style="${btnStyle}">${nextLabel}</button>`;
+        return;
+      }
+      const tg = { warm:['▲','var(--teal)'], steady:['▶','var(--muted)'], cool:['▼','var(--coral)'] }[w.trend] || ['▶','var(--muted)'];
+      $('know-body').innerHTML = `
+        <div style="font-family:var(--title);font-size:22px;font-weight:500;letter-spacing:0.5px">${s.name}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">Median? Days on market? Say it aloud — then check.</div>
+        <div id="know-answer" onclick="__knowReveal()" style="margin-top:12px;filter:blur(7px);opacity:.55;transition:filter .3s,opacity .3s;cursor:pointer">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:15px">
+            <div><div class="label" style="color:var(--muted);margin-bottom:2px">Median</div>${w.median}</div>
+            <div><div class="label" style="color:var(--muted);margin-bottom:2px">Days</div>${w.daysOnMarket}</div>
+            <div><div class="label" style="color:var(--muted);margin-bottom:2px">Trend</div><span style="color:${tg[1]}">${tg[0]} ${w.trend}</span></div>
+          </div>
+          <div style="font-size:12px;color:var(--dim);margin-top:8px">${w.note}</div>
+        </div>
+        <button id="know-btn" onclick="__knowReveal()" style="${btnStyle}">Reveal answer</button>`;
+    };
+
+    window.__knowReveal = () => {
+      const a = $('know-answer'); if (a) { a.style.filter = 'none'; a.style.opacity = '1'; a.style.cursor = 'default'; }
+      const b = $('know-btn'); if (b) { b.textContent = (done + 1 >= deckLen) ? 'Finish ✓' : 'Next card →'; b.setAttribute('onclick', '__knowNext()'); }
+    };
+    window.__knowNext = () => { done++; save(); if (done >= deckLen) drawDone(); else drawCard(); };
+
+    if (done >= deckLen) drawDone(); else drawCard();
+  }
+
+  // Lightweight content nudge: one rotating idea + a "posted today" tick.
+  const CONTENT_IDEAS = [
+    'Film a 30-sec walkthrough of one standout feature in a current listing.',
+    'Share a just-sold result with the one-line story behind the price.',
+    '“What $900k buys in Athelstone vs Norwood” — a quick side-by-side.',
+    'Market-minute: this week’s Adelaide clearance rate + what it means for sellers.',
+    'Introduce yourself in Italian and English — the community will share it.',
+    'Bust one myth about selling in winter.',
+    'Behind-the-scenes: prepping a home the morning of an open.',
+    'Answer a FAQ: “How long does settlement actually take in SA?”',
+    'Spotlight a local deli or café your Italian-belt clients love.',
+    'Your 30-second “why I got into real estate” story.',
+    'A gentle tip for downsizers thinking about the next chapter.',
+    'Before/after of a room that styling transformed.',
+    'This weekend’s opens in your suburbs — one saveable post.',
+    'A 5-star client moment (with their permission).',
+  ];
+  function renderContent() {
+    const idea = CONTENT_IDEAS[daysSinceEpoch() % CONTENT_IDEAS.length];
+    const KEY = 'content-posted';
+    let posted = false;
+    try { posted = localStorage.getItem(KEY) === todayISO(); } catch {}
+    const draw = () => {
+      $('content-flag').textContent = posted ? '✓ done' : '';
+      $('content-flag').style.color = posted ? 'var(--gold)' : 'var(--muted)';
+      $('content-body').innerHTML = `
+        <div style="font-size:14px;line-height:1.5;color:var(--text)">${idea}</div>
+        <label style="display:inline-flex;align-items:center;gap:8px;margin-top:11px;font-size:13px;color:${posted ? 'var(--gold)' : 'var(--muted)'};cursor:pointer">
+          <input type="checkbox" ${posted ? 'checked' : ''} onchange="__togglePosted()"> ${posted ? 'Posted today' : 'Mark as posted'}</label>`;
+    };
+    window.__togglePosted = () => {
+      posted = !posted;
+      try { posted ? localStorage.setItem(KEY, todayISO()) : localStorage.removeItem(KEY); } catch {}
+      draw();
+    };
+    draw();
+  }
+
   async function init() {
     const [config, brief, stats, italian, skills] = await Promise.all(
       ['config','brief','stats','italian','skills'].map(load));
@@ -294,6 +396,8 @@
     renderSuburbs(config, brief);
     renderMap(config, brief, stats);
     renderRotation(italian, skills);
+    renderKnowNumbers(config, stats);
+    renderContent();
     renderMyDay();
   }
   init().catch(e => { $('stale').style.display = 'block'; $('stale').textContent = 'Could not load brief data: ' + e.message; });
